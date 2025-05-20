@@ -1,5 +1,5 @@
 name: draw-md # 这是你的插件的唯一识别名。
 desc: 使用ModelScope API生成图像的AstrBot插件 # 插件简短描述
-version: v1.1 # 插件版本号。格式：v1.1.1 或者 v1.1
+version: v1.2 # 插件版本号。格式：v1.1.1 或者 v1.1
 author: xiaohan # 作者
 repo: https://github.com/yourusername/astrbot_plugin_draw-md # 插件的仓库地址
