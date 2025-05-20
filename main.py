@@ -12,7 +12,7 @@ from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 
-@register("draw-md", "xiaohan", "使用ModelScope API生成图像的AstrBot插件", "v1.3", "https://github.com/yourusername/astrbot_plugin_draw-md")
+@register("draw-md", "xiaohan", "使用ModelScope API生成图像的AstrBot插件", "v1.5", "https://github.com/yourusername/astrbot_plugin_draw-md")
 class DrawMD(Star):
     def __init__(self, context: Context):
         super().__init__(context)
@@ -25,22 +25,43 @@ class DrawMD(Star):
     
     def load_config(self):
         """从配置文件加载配置"""
-        config_path = os.path.join(os.path.dirname(__file__), "_conf_schema.json")
+        # 首先尝试读取用户配置文件
+        config_file = os.path.join(os.path.dirname(__file__), "config.json")
+        schema_file = os.path.join(os.path.dirname(__file__), "_conf_schema.json")
+        
+        # 读取schema以获取默认值
         try:
-            with open(config_path, "r", encoding="utf-8") as f:
+            with open(schema_file, "r", encoding="utf-8") as f:
                 config_schema = json.load(f)
                 
-            # 从配置模式中提取默认值
+            # 设置默认值
             self.API_URL = config_schema["API_URL"]["default"]
             self.API_KEY = config_schema["API_KEY"]["default"]
             self.MODEL = config_schema["MODEL"]["default"]
             self.OUTPUT_DIR = config_schema["OUTPUT_DIR"]["default"]
             
-            logger.info("从_conf_schema.json加载配置成功")
-            
+            # 尝试读取用户配置文件并覆盖默认值
+            if os.path.exists(config_file):
+                with open(config_file, "r", encoding="utf-8") as f:
+                    user_config = json.load(f)
+                    
+                # 使用用户配置覆盖默认值
+                if "API_URL" in user_config:
+                    self.API_URL = user_config["API_URL"]
+                if "API_KEY" in user_config:
+                    self.API_KEY = user_config["API_KEY"]
+                if "MODEL" in user_config:
+                    self.MODEL = user_config["MODEL"]
+                if "OUTPUT_DIR" in user_config:
+                    self.OUTPUT_DIR = user_config["OUTPUT_DIR"]
+                    
+                logger.info("从用户配置文件加载配置成功")
+            else:
+                logger.info("未找到用户配置文件，使用默认值")
+                
         except Exception as e:
             logger.error(f"加载配置文件失败: {str(e)}")
-            # 使用默认值
+            # 使用硬编码的默认值
             self.API_URL = "https://api-inference.modelscope.cn/v1/images/generations"
             self.API_KEY = "a8440c49-e85b-4971-b9c6-3843de7ea75a"
             self.MODEL = "MusePublic/14_ckpt_SD_XL"
