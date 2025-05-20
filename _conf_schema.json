@@ -6,7 +6,7 @@
   },
   "API_KEY": {
     "type": "string",
-    "default": "a8440c49-e85b-4971-b9c6-3843de7ea75a",
+    "default": "1145145145",
     "description": "ModelScope API的密钥"
   },
   "MODEL": {
