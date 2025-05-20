@@ -6,14 +6,16 @@ import io
 from PIL import Image
 from datetime import datetime
 import uuid
-from astrbot.star import Plugin, Event, Message, MessageSegment
+
+# 修改导入语句，使用正确的AstrBot插件API
+from astrbot import Plugin, Event, Message, MessageSegment
 
 # 插件类定义
 class DrawMD(Plugin):
     def __init__(self):
         # 插件初始化
         self.plugin_name = "draw-md"
-        self.version = "1.0"
+        self.version = "1.1"
         self.description = "使用ModelScope API生成图像的插件"
         
         # API配置
