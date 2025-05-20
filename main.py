@@ -36,23 +36,8 @@ class DrawMD(Star):
             self.MODEL = config_schema["MODEL"]["default"]
             self.OUTPUT_DIR = config_schema["OUTPUT_DIR"]["default"]
             
-            # 如果有用户配置文件，则覆盖默认值
-            user_config_path = os.path.join(os.path.dirname(__file__), "config.json")
-            if os.path.exists(user_config_path):
-                with open(user_config_path, "r", encoding="utf-8") as f:
-                    user_config = json.load(f)
-                
-                # 使用用户配置覆盖默认值
-                if "API_URL" in user_config:
-                    self.API_URL = user_config["API_URL"]
-                if "API_KEY" in user_config:
-                    self.API_KEY = user_config["API_KEY"]
-                if "MODEL" in user_config:
-                    self.MODEL = user_config["MODEL"]
-                if "OUTPUT_DIR" in user_config:
-                    self.OUTPUT_DIR = user_config["OUTPUT_DIR"]
-                    
-            logger.info("绘图插件配置加载成功")
+            logger.info("从_conf_schema.json加载配置成功")
+            
         except Exception as e:
             logger.error(f"加载配置文件失败: {str(e)}")
             # 使用默认值
