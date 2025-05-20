@@ -12,19 +12,54 @@ from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
 
-@register("draw-md", "xiaohan", "使用ModelScope API生成图像的AstrBot插件", "v1.1", "https://github.com/yourusername/astrbot_plugin_draw-md")
+@register("draw-md", "xiaohan", "使用ModelScope API生成图像的AstrBot插件", "v1.3", "https://github.com/yourusername/astrbot_plugin_draw-md")
 class DrawMD(Star):
     def __init__(self, context: Context):
         super().__init__(context)
         
-        # API配置
-        self.API_URL = "https://api-inference.modelscope.cn/v1/images/generations"
-        self.API_KEY = "a8440c49-e85b-4971-b9c6-3843de7ea75a"
-        self.MODEL = "MusePublic/14_ckpt_SD_XL"
+        # 从配置文件加载配置
+        self.load_config()
         
         # 创建保存图片的目录
-        self.OUTPUT_DIR = "generated_images"
         os.makedirs(self.OUTPUT_DIR, exist_ok=True)
+    
+    def load_config(self):
+        """从配置文件加载配置"""
+        config_path = os.path.join(os.path.dirname(__file__), "_conf_schema.json")
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                config_schema = json.load(f)
+                
+            # 从配置模式中提取默认值
+            self.API_URL = config_schema["API_URL"]["default"]
+            self.API_KEY = config_schema["API_KEY"]["default"]
+            self.MODEL = config_schema["MODEL"]["default"]
+            self.OUTPUT_DIR = config_schema["OUTPUT_DIR"]["default"]
+            
+            # 如果有用户配置文件，则覆盖默认值
+            user_config_path = os.path.join(os.path.dirname(__file__), "config.json")
+            if os.path.exists(user_config_path):
+                with open(user_config_path, "r", encoding="utf-8") as f:
+                    user_config = json.load(f)
+                
+                # 使用用户配置覆盖默认值
+                if "API_URL" in user_config:
+                    self.API_URL = user_config["API_URL"]
+                if "API_KEY" in user_config:
+                    self.API_KEY = user_config["API_KEY"]
+                if "MODEL" in user_config:
+                    self.MODEL = user_config["MODEL"]
+                if "OUTPUT_DIR" in user_config:
+                    self.OUTPUT_DIR = user_config["OUTPUT_DIR"]
+                    
+            logger.info("绘图插件配置加载成功")
+        except Exception as e:
+            logger.error(f"加载配置文件失败: {str(e)}")
+            # 使用默认值
+            self.API_URL = "https://api-inference.modelscope.cn/v1/images/generations"
+            self.API_KEY = "a8440c49-e85b-4971-b9c6-3843de7ea75a"
+            self.MODEL = "MusePublic/14_ckpt_SD_XL"
+            self.OUTPUT_DIR = "generated_images"
     
     # 处理绘图命令
     @filter.command("draw")
@@ -83,10 +118,19 @@ class DrawMD(Star):
         if result["success"]:
             # 发送成功消息和图片
             for img_path in result["images"]:
-                result = MessageEventResult()
-                result.add_text(f"生成的图像 - '{prompt}'")
-                result.add_image(img_path)
-                yield result
+                # 根据文档，使用正确的方式创建消息结果
+                # 使用plain_result方法创建文本消息
+                text_result = event.plain_result(f"生成的图像 - '{prompt}'")
+                yield text_result
+                
+                # 创建图片消息
+                # 根据文档，我们需要设置事件结果
+                # 这里我们直接使用set_result方法设置图片路径
+                image_result = MessageEventResult()
+                event.set_result(image_result)
+                # 添加图片路径到结果中
+                image_result.image_path = img_path
+                yield image_result
         else:
             # 发送失败消息
             yield event.plain_result(f"图像生成失败: {result['error']}")

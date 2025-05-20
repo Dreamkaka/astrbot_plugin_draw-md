@@ -1,0 +1,22 @@
+{
+  "API_URL": {
+    "type": "string",
+    "default": "https://api-inference.modelscope.cn/v1/images/generations",
+    "description": "ModelScope API的URL"
+  },
+  "API_KEY": {
+    "type": "string",
+    "default": "1145145145",
+    "description": "ModelScope API的密钥"
+  },
+  "MODEL": {
+    "type": "string",
+    "default": "MusePublic/14_ckpt_SD_XL",
+    "description": "使用的模型名称"
+  },
+  "OUTPUT_DIR": {
+    "type": "string",
+    "default": "generated_images",
+    "description": "生成图像的保存目录"
+  }
+}
